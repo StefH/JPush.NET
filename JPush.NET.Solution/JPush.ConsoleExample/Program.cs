@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.IO;
+using System.Linq;
 using JPush;
 using JPush.Models;
 
@@ -7,10 +10,12 @@ namespace JPushConsoleExample
 {
     class Program
     {
+        private static string appKey; // Your App Key from JPush
+        private static string masterSecret; // Your Master Secret from JPush
+
         static void Main(string[] args)
         {
-            var appKey = "appkey"; // Your App Key from JPush
-            var masterSecret = "mastersecret"; // Your Master Secret from JPush
+            ReadIniFile();
 
             var customizedValues = new Dictionary<string, string>();
             customizedValues.Add("CK1", "CV1");
@@ -81,6 +86,37 @@ namespace JPushConsoleExample
 
             Console.WriteLine("Press any key to exit.");
             Console.Read();
+        }
+
+        private static void ReadIniFile()
+        {
+            bool iniFound = false;
+
+            // Read appKey and masterSecret from Settings.ini file
+            // Example file:
+            //     appkey=1234567890abcdef12345678
+            //     mastersecret=abcdef1234567890aaaaaaaa
+            foreach (var iniFile in new[] { "Settings.ini", "../../Settings.ini" })
+            {
+                try
+                {
+                    var iniSettings = File.ReadLines(iniFile).Select(l => l.Split('=')).ToDictionary(l => l.First().Trim(), l => l.Last().Trim());
+                    appKey = iniSettings["appkey"]; // Your App Key from JPush
+                    masterSecret = iniSettings["mastersecret"]; // Your Master Secret from JPush
+
+                    iniFound = true;
+                    break;
+                }
+                catch
+                {
+                    // Try other ini file
+                }
+            }
+
+            if (!iniFound)
+            {
+                throw new Exception("Settings.ini not found or invalid");
+            }
         }
     }
 }
