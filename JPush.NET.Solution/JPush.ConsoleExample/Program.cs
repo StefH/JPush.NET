@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using JPush;
 using JPush.Models;
 
@@ -18,19 +16,19 @@ namespace JPushConsoleExample
         {
             ReadIniFile();
 
-            var client = new JPushClient(appKey, masterSecret, false);
-            //client.OverrideApiUrl("http://localhost", 10000);
-            //client.OverrideReportUrl("http://localhost", 10001);
-
-            SendBroadcastMessage(client);
-            SendByRegistrationIdMessage(client);
+            SendBroadcastMessage();
+            SendByRegistrationIdMessage();
 
             Console.WriteLine("Press any key to exit.");
             Console.Read();
         }
 
-        private static void SendByRegistrationIdMessage(JPushClient client)
+        private static void SendByRegistrationIdMessage()
         {
+            var client = new JPushClient(appKey, masterSecret, false);
+            //client.OverrideApiUrl("http://localhost", 10000);
+            //client.OverrideReportUrl("http://localhost", 10001);
+
             var request = new PushMessageRequest
            {
                MessageType = MessageType.Notification,
@@ -49,7 +47,7 @@ namespace JPushConsoleExample
 
             var idToCheck = new List<string>();
             var sendTask = client.SendPushMessageAsync(request);
-            sendTask.ContinueWith((task) =>
+            sendTask.ContinueWith(task =>
             {
                 if (task.IsFaulted)
                 {
@@ -85,8 +83,12 @@ namespace JPushConsoleExample
             }
         }
 
-        private static void SendBroadcastMessage(JPushClient client)
+        private static void SendBroadcastMessage()
         {
+            var client = new JPushClient(appKey, masterSecret);
+            //client.OverrideApiUrl("http://localhost", 10000);
+            //client.OverrideReportUrl("http://localhost", 10001);
+
             var customizedValues = new Dictionary<string, string>();
             customizedValues.Add("CK1", "CV1");
             customizedValues.Add("CK2", "CV2");
@@ -115,7 +117,7 @@ namespace JPushConsoleExample
 
             request.Message.PushTitle += "ASYNC";
             var sendTask = client.SendPushMessageAsync(request);
-            sendTask.ContinueWith((task) =>
+            sendTask.ContinueWith(task =>
             {
                 if (task.IsFaulted)
                 {
