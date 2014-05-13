@@ -15,7 +15,7 @@ namespace JPushConsoleExample
         [STAThread]
         static void Main(string[] args)
         {
-            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomainUnhandledException;
 
             ReadIniFile();
 
@@ -34,7 +34,7 @@ namespace JPushConsoleExample
             }
         }
 
-        private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        private static void CurrentDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             Console.WriteLine("Error : {0}", e.ExceptionObject);
         }
@@ -46,7 +46,7 @@ namespace JPushConsoleExample
             {
                 Console.WriteLine("Call http://localhost:10000/v2");
                 client.OverrideApiUrl("http://localhost", 10000);
-                client.OverrideReportUrl("http://localhost", 10001);
+                client.OverrideReportUrl("http://localhost", 10000);
             }
 
             var request = new PushMessageRequest

@@ -18,6 +18,24 @@ namespace JPushTestServer
     [ServiceContract(Name = "JPushServices")]
     public class JPushServices
     {
+        // GET /v2/received
+        // msg_ids=1,2,3
+        [OperationContract]
+        [WebGet(UriTemplate = "received?msg_ids={messageIds}", BodyStyle = WebMessageBodyStyle.Bare, ResponseFormat = WebMessageFormat.Json)]
+        public JPushMessageStatusResponse QueryPushMessageStatus(string messageIds)
+        {
+            Console.WriteLine("GET /received");
+
+            Console.WriteLine("[msg_ids]={0}", messageIds);
+
+            return new JPushMessageStatusResponse
+            {
+                MessageId = string.Format("{0}{1}", DateTime.Now.Millisecond, DateTime.Now.Millisecond),
+                AndroidReceived = messageIds.Split(',').Count(),
+                ApplePushNotificationSent = 0
+            };
+        }
+
         // POST /v2/push
         // receiver_type=5&
         // msg_type=1&
@@ -41,7 +59,7 @@ namespace JPushTestServer
                 Console.WriteLine("[{0}]={1}", key, queryValues[key]);
             }
 
-            var request = Parse(queryValues);
+            var request = ParseJPushMessageRequest(queryValues);
 
             return new JPushResponse
             {
@@ -52,7 +70,7 @@ namespace JPushTestServer
             };
         }
 
-        private JPushMessageRequest Parse(NameValueCollection queryValues)
+        private JPushMessageRequest ParseJPushMessageRequest(NameValueCollection queryValues)
         {
             var request = new JPushMessageRequest();
             var properties = request.GetType()

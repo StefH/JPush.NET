@@ -275,7 +275,7 @@ namespace JPush
             var client = CreateJPushRestClient(ReportBaseUrl);
             var restRequest = CreateQueryPushMessageStatusRequest(messageIdCollection);
 
-            var restResponse = client.Execute<List<JPushMessageStatus>>(restRequest);
+            var restResponse = client.Execute<List<JPushMessageStatusResponse>>(restRequest);
             return Map(restResponse);
         }
 
@@ -296,7 +296,7 @@ namespace JPush
             var client = CreateJPushRestClient(ReportBaseUrl);
             var restRequest = CreateQueryPushMessageStatusRequest(messageIdCollection);
 
-            var resttask = client.ExecuteTaskAsync<List<JPushMessageStatus>>(restRequest);
+            var resttask = client.ExecuteTaskAsync<List<JPushMessageStatusResponse>>(restRequest);
             return resttask.MapTask(Map);
         }
 
@@ -359,7 +359,7 @@ namespace JPush
             return result;
         }
 
-        protected List<PushMessageStatus> Map(IRestResponse<List<JPushMessageStatus>> source)
+        protected List<PushMessageStatus> Map(IRestResponse<List<JPushMessageStatusResponse>> source)
         {
             if (source == null || source.Data == null)
             {

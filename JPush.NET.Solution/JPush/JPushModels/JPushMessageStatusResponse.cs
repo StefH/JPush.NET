@@ -6,7 +6,7 @@ namespace JPush.JPushModels
     /// Class JPushMessageStatus.
     /// </summary>
     [DataContract]
-    public class JPushMessageStatus
+    public class JPushMessageStatusResponse
     {
         /// <summary>
         /// Gets or sets the message unique identifier.
@@ -14,7 +14,7 @@ namespace JPush.JPushModels
         /// </summary>
         /// <value>The message unique identifier.</value>
         [DataMember(Name = "msg_id")]
-        public int? MessageId { get; set; }
+        public string MessageId { get; set; }
 
 
         /// <summary>

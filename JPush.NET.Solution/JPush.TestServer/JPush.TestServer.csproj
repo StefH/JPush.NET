@@ -51,8 +51,8 @@
     <Compile Include="..\JPush\JPushModels\JPushMessageRequest.cs">
       <Link>Models\JPushMessageRequest.cs</Link>
     </Compile>
-    <Compile Include="..\JPush\JPushModels\JPushMessageStatus.cs">
-      <Link>Models\JPushMessageStatus.cs</Link>
+    <Compile Include="..\JPush\JPushModels\JPushMessageStatusResponse.cs">
+      <Link>Models\JPushMessageStatusResponse.cs</Link>
     </Compile>
     <Compile Include="..\JPush\JPushModels\JPushResponse.cs">
       <Link>Models\JPushResponse.cs</Link>

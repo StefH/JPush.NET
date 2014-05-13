@@ -47,7 +47,7 @@
     <Compile Include="Extensions\Extension.cs" />
     <Compile Include="Extensions\TaskExtensions.cs" />
     <Compile Include="JPushClient.cs" />
-    <Compile Include="JPushModels\JPushMessageStatus.cs" />
+    <Compile Include="JPushModels\JPushMessageStatusResponse.cs" />
     <Compile Include="JPushModels\JPushResponse.cs" />
     <Compile Include="JPushModels\JPushMessageRequest.cs" />
     <Compile Include="JPushProxySettings.cs" />

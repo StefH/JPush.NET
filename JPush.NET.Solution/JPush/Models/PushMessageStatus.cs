@@ -14,7 +14,7 @@ namespace JPush.Models
         /// </summary>
         /// <value>The message unique identifier.</value>
         [DataMember(Name = "msg_id")]
-        public int? MessageId { get; set; }
+        public string MessageId { get; set; }
 
         /// <summary>
         /// Gets or sets the android delivered count.
