@@ -12,73 +12,75 @@ namespace JPushConsoleExample
         private static string appKey; // Your App Key from JPush
         private static string masterSecret; // Your Master Secret from JPush
 
+        [STAThread]
         static void Main(string[] args)
         {
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+
             ReadIniFile();
 
-            SendBroadcastMessage();
-            SendByRegistrationIdMessage();
+            try
+            {
+                // Can fail
+                SendByRegistrationIdMessage(true);
+            }
+            finally
+            {
+                SendByRegistrationIdMessage();
+                SendBroadcastMessage();
 
-            Console.WriteLine("Press any key to exit.");
-            Console.Read();
+                Console.WriteLine("Press any key to exit.");
+                Console.Read();
+            }
         }
 
-        private static void SendByRegistrationIdMessage()
+        private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            Console.WriteLine("Error : {0}", e.ExceptionObject);
+        }
+
+        private static void SendByRegistrationIdMessage(bool useLocalhost = false)
         {
             var client = new JPushClient(appKey, masterSecret, false);
-            //client.OverrideApiUrl("http://localhost", 10000);
-            //client.OverrideReportUrl("http://localhost", 10001);
+            if (useLocalhost)
+            {
+                Console.WriteLine("Call http://localhost:10000/v2");
+                client.OverrideApiUrl("http://localhost", 10000);
+                client.OverrideReportUrl("http://localhost", 10001);
+            }
 
             var request = new PushMessageRequest
-           {
-               MessageType = MessageType.Notification,
-               Platform = PushPlatform.Android,
-               Description = "DotNET",
-               PushType = PushType.ByRegistrationId,
-               ReceiverValue = "040f2c4faa0",
-               IsTestEnvironment = true,
-               Message = new PushMessage
-               {
-                   Content = "JPush ByRegistrationId message @ " + DateTime.Now.ToLongTimeString(),
-                   PushTitle = "ASYNC : <推送服务>",
-                   Sound = "YourSound"
-               }
-           };
-
-            var idToCheck = new List<string>();
-            var sendTask = client.SendPushMessageAsync(request);
-            sendTask.ContinueWith(task =>
             {
-                if (task.IsFaulted)
+                MessageType = MessageType.Notification,
+                Platform = PushPlatform.Android,
+                Description = "DotNET",
+                PushType = PushType.ByRegistrationId,
+                ReceiverValue = "040f2c4faa0",
+                IsTestEnvironment = true,
+                Message = new PushMessage
                 {
-                    Console.WriteLine("IsFaulted : " + task.Exception);
+                    Content = "JPush ByRegistrationId message @ " + DateTime.Now.ToLongTimeString(),
+                    PushTitle = "ASYNC : <推送服务>",
+                    Sound = "YourSound"
                 }
-                else if (task.IsCanceled)
-                {
-                    Console.WriteLine("IsCanceled");
-                }
-                else
-                {
-                    Console.WriteLine("SendPushMessageAsync : " + task.Result.ResponseCode + ":" + task.Result.ResponseMessage);
-                    Console.WriteLine("Push sent : " + task.Result.MessageId);
+            };
 
-                    idToCheck.Add(task.Result.MessageId);
+            var response = client.SendPushMessage(request);
 
-
-                }
-            })
-            .Wait(TimeSpan.FromSeconds(3))
-            ;
-
-            var statusList = client.QueryPushMessageStatus(idToCheck);
-            Console.WriteLine("QueryPushMessageStatus is completed.");
-
-            if (statusList != null)
+            if (response.ResponseCode == 0)
             {
-                foreach (var status in statusList)
+                var idToCheck = new List<string> { response.MessageId };
+
+                var statusList = client.QueryPushMessageStatus(idToCheck);
+                Console.WriteLine("QueryPushMessageStatus is completed.");
+
+                if (statusList != null)
                 {
-                    Console.WriteLine("Id: {0}, Android: {1}, iOS: {2}", status.MessageId, status.AndroidDeliveredCount,
-                        status.ApplePushNotificationDeliveredCount);
+                    foreach (var status in statusList)
+                    {
+                        Console.WriteLine("Id: {0}, Android: {1}, iOS: {2}", status.MessageId, status.AndroidDeliveredCount,
+                            status.ApplePushNotificationDeliveredCount);
+                    }
                 }
             }
         }
@@ -86,8 +88,6 @@ namespace JPushConsoleExample
         private static void SendBroadcastMessage()
         {
             var client = new JPushClient(appKey, masterSecret);
-            //client.OverrideApiUrl("http://localhost", 10000);
-            //client.OverrideReportUrl("http://localhost", 10001);
 
             var customizedValues = new Dictionary<string, string>();
             customizedValues.Add("CK1", "CV1");
@@ -135,7 +135,7 @@ namespace JPushConsoleExample
                     idToCheck.Add(task.Result.MessageId);
                 }
             })
-            .Wait(TimeSpan.FromSeconds(3))
+            .Wait(TimeSpan.FromSeconds(5))
             ;
 
             idToCheck.Add(response.MessageId);
