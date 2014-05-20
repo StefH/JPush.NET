@@ -15,6 +15,7 @@ namespace JPushTestServer
             serviceHost.AddServiceEndpoint(typeof(JPushServices), binding, "");
             serviceHost.Open();
 
+            Console.WriteLine("Press any key to exit.");
             Console.ReadKey();
             serviceHost.Close();
         }

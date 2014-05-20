@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using JPush.Extensions;
 using JPush.JPushModels;
+using JPush.JPushRest;
 using JPush.Models;
 using RestSharp;
 
@@ -308,10 +309,15 @@ namespace JPush
         /// Creates the query push message status request.
         /// </summary>
         /// <param name="messageIdCollection">The message identifier collection.</param>
+        /// <param name="timeout">The timeout.</param>
         /// <returns>RestRequest</returns>
-        protected RestRequest CreateQueryPushMessageStatusRequest(List<string> messageIdCollection)
+        protected RestRequest CreateQueryPushMessageStatusRequest(List<string> messageIdCollection, int? timeout = 30 * 1000)
         {
-            var restRequest = new RestRequest("received", Method.GET);
+            var restRequest = new RestRequest("received", Method.GET)
+            {
+                Timeout = timeout ?? 0
+            };
+
             restRequest.AddParameter("msg_ids", string.Join(",", messageIdCollection.Take(MaxQueryIds)));
 
             return restRequest;
@@ -321,10 +327,15 @@ namespace JPush
         /// Creates the push message request.
         /// </summary>
         /// <param name="request">The request.</param>
+        /// <param name="timeout">The timeout.</param>
         /// <returns>RestRequest</returns>
-        protected RestRequest CreatePushMessageRequest(PushMessageRequest request)
+        protected RestRequest CreatePushMessageRequest(PushMessageRequest request, int? timeout = 30 * 1000)
         {
-            var restRequest = new RestRequest("push", Method.POST);
+            var restRequest = new RestRequest("push", Method.POST)
+            {
+                Timeout = timeout ?? 0
+            };
+
             foreach (var kvp in CreatePostDictionary(request))
             {
                 restRequest.AddParameter(kvp.Key, kvp.Value);
@@ -333,9 +344,9 @@ namespace JPush
             return restRequest;
         }
 
-        protected JPushRest.JPushRestClient CreateJPushRestClient(string baseUrl)
+        protected JPushRestClient CreateJPushRestClient(string baseUrl)
         {
-            var client = new JPushRest.JPushRestClient(baseUrl, AppKey, MasterSecret);
+            var client = new JPushRestClient(baseUrl, AppKey, MasterSecret);
             if (ProxySettings != null && ProxySettings.Enabled)
             {
                 client.Proxy = ProxySettings.GetWebProxy();
@@ -347,60 +358,79 @@ namespace JPush
         /// <summary>
         /// Maps a IRestResponse[JPushResponse] to PushResponse
         /// </summary>
-        /// <param name="source">The IRestResponse[JPushResponse].</param>
+        /// <param name="restReponse">The IRestResponse[JPushResponse].</param>
         /// <returns>PushResponse</returns>
-        protected PushResponse Map(IRestResponse<JPushResponse> source)
+        protected PushResponse Map(IRestResponse<JPushResponse> restReponse)
         {
-            if (source == null || source.Data == null)
+            if (restReponse == null)
             {
                 return new PushResponse
                 {
-                    ResponseCode = PushResponseCode.ServiceError
+                    ResponseCode = PushResponseCode.ServiceError,
+                    ResponseMessage = "The RestReponse is null"
                 };
             }
 
-            var result = new PushResponse
+            switch (restReponse.ResponseStatus)
             {
-                ResponseCode = (PushResponseCode)source.Data.ErrorCode,
-                ResponseMessage = source.Data.ErrorMessage
-            };
+                case ResponseStatus.Completed:
+                    var result = new PushResponse
+                    {
+                        ResponseCode = (PushResponseCode)restReponse.Data.ErrorCode,
+                        ResponseMessage = restReponse.Data.ErrorMessage
+                    };
 
-            if (result.ResponseCode == PushResponseCode.Succeed)
-            {
-                result.MessageId = source.Data.MessageId;
-                result.SendIdentity = source.Data.SendNo;
+                    if (result.ResponseCode == PushResponseCode.Succeed)
+                    {
+                        result.MessageId = restReponse.Data.MessageId;
+                        result.SendIdentity = restReponse.Data.SendNo;
+                    }
+
+                    return result;
+
+                default:
+                    return new PushResponse
+                    {
+                        ResponseCode = PushResponseCode.ServiceError,
+                        ResponseMessage = restReponse.ErrorMessage
+                    };
             }
-
-            return result;
         }
 
         /// <summary>
         /// Maps IRestResponse[List[JPushMessageStatusResponse]] to List[PushMessageStatus].
         /// </summary>
-        /// <param name="source">The IRestResponse[List[JPushMessageStatusResponse]].</param>
+        /// <param name="restResponse">The IRestResponse[List[JPushMessageStatusResponse]].</param>
         /// <returns>List[PushMessageStatus]</returns>
-        protected List<PushMessageStatus> Map(IRestResponse<List<JPushMessageStatusResponse>> source)
+        protected List<PushMessageStatus> Map(IRestResponse<List<JPushMessageStatusResponse>> restResponse)
         {
-            if (source == null || source.Data == null)
+            if (restResponse == null)
             {
                 return null;
             }
 
-            return source.Data
-                .Select(j => new PushMessageStatus
-                {
-                    MessageId = j.MessageId,
-                    AndroidDeliveredCount = j.AndroidReceived,
-                    ApplePushNotificationDeliveredCount = j.ApplePushNotificationSent
-                })
-                .ToList();
+            switch (restResponse.ResponseStatus)
+            {
+                case ResponseStatus.Completed:
+                    return restResponse.Data
+                       .Select(j => new PushMessageStatus
+                       {
+                           MessageId = j.MessageId,
+                           AndroidDeliveredCount = j.AndroidReceived,
+                           ApplePushNotificationDeliveredCount = j.ApplePushNotificationSent
+                       })
+                       .ToList();
+
+                default:
+                    return null;
+            }
         }
 
         /// <summary>
         /// Maps a PushMessageRequest to a JPushMessageRequest.
         /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns></returns>
+        /// <param name="request">The PushMessageRequest.</param>
+        /// <returns>A JPushMessageRequest</returns>
         protected JPushMessageRequest Map(PushMessageRequest request)
         {
             var sendIdentity = GenerateSendIdentity();

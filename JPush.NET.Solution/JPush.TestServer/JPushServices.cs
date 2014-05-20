@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
@@ -22,18 +23,19 @@ namespace JPushTestServer
         // msg_ids=1,2,3
         [OperationContract]
         [WebGet(UriTemplate = "received?msg_ids={messageIds}", BodyStyle = WebMessageBodyStyle.Bare, ResponseFormat = WebMessageFormat.Json)]
-        public JPushMessageStatusResponse QueryPushMessageStatus(string messageIds)
+        public IEnumerable<JPushMessageStatusResponse> QueryPushMessageStatus(string messageIds)
         {
             Console.WriteLine("GET /received");
-
             Console.WriteLine("[msg_ids]={0}", messageIds);
 
-            return new JPushMessageStatusResponse
-            {
-                MessageId = string.Format("{0}{1}", DateTime.Now.Millisecond, DateTime.Now.Millisecond),
-                AndroidReceived = messageIds.Split(',').Count(),
-                ApplePushNotificationSent = 0
-            };
+            return messageIds.Split(',').Select(messageId =>
+                new JPushMessageStatusResponse
+                {
+                    MessageId = messageId,
+                    AndroidReceived = 1,
+                    ApplePushNotificationSent = 0
+                }
+            );
         }
 
         // POST /v2/push

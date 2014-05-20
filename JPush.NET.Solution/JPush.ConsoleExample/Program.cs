@@ -60,7 +60,7 @@ namespace JPushConsoleExample
                 Message = new PushMessage
                 {
                     Content = "JPush ByRegistrationId message @ " + DateTime.Now.ToLongTimeString(),
-                    PushTitle = "ASYNC : <推送服务>",
+                    PushTitle = "<推送服务>",
                     Sound = "YourSound"
                 }
             };
@@ -78,10 +78,14 @@ namespace JPushConsoleExample
                 {
                     foreach (var status in statusList)
                     {
-                        Console.WriteLine("Id: {0}, Android: {1}, iOS: {2}", status.MessageId, status.AndroidDeliveredCount,
-                            status.ApplePushNotificationDeliveredCount);
+                        Console.WriteLine("Id: {0}, Android: {1}, iOS: {2}",
+                            status.MessageId, status.AndroidDeliveredCount ?? 0, status.ApplePushNotificationDeliveredCount ?? 0);
                     }
                 }
+            }
+            else
+            {
+                Console.WriteLine("There was an error [{0}, {1}] when sending a PushMessage", response.ResponseCode, response.ResponseMessage);
             }
         }
 
@@ -135,7 +139,7 @@ namespace JPushConsoleExample
                     idToCheck.Add(task.Result.MessageId);
                 }
             })
-            .Wait(TimeSpan.FromSeconds(5))
+            .Wait(TimeSpan.FromSeconds(10))
             ;
 
             idToCheck.Add(response.MessageId);
@@ -147,8 +151,8 @@ namespace JPushConsoleExample
             {
                 foreach (var status in statusList)
                 {
-                    Console.WriteLine("Id: {0}, Android: {1}, iOS: {2}", status.MessageId, status.AndroidDeliveredCount,
-                        status.ApplePushNotificationDeliveredCount);
+                    Console.WriteLine("Id: {0}, Android: {1}, iOS: {2}",
+                        status.MessageId, status.AndroidDeliveredCount ?? 0, status.ApplePushNotificationDeliveredCount ?? 0);
                 }
             }
         }
