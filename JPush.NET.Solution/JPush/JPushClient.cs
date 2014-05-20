@@ -77,7 +77,7 @@ namespace JPush
         /// <summary>
         /// JPush has limitation officially. One query support no more than 100 IDs.
         /// </summary>
-        private const int MaxQueryIds = 100;
+        protected const int MaxQueryIds = 100;
 
         /// <summary>
         /// The HTTP port
@@ -198,28 +198,6 @@ namespace JPush
         #region Public methods
 
         /// <summary>
-        /// Overrides the API URL.
-        /// </summary>
-        /// <param name="host">The host.</param>
-        /// <param name="port">The port.</param>
-        public void OverrideApiUrl(string host, int port)
-        {
-            ApiHost = host;
-            ApiPort = port;
-        }
-
-        /// <summary>
-        /// Overrides the report URL.
-        /// </summary>
-        /// <param name="host">The host.</param>
-        /// <param name="port">The port.</param>
-        public void OverrideReportUrl(string host, int port)
-        {
-            ReportHost = host;
-            ReportPort = port;
-        }
-
-        /// <summary>
         /// Sends the push message.
         /// </summary>
         /// <param name="request">The PushMessageRequest.</param>
@@ -300,10 +278,37 @@ namespace JPush
             return resttask.MapTask(Map);
         }
 
+        /// <summary>
+        /// Overrides the API URL. (Can be used for testing purposes)
+        /// </summary>
+        /// <param name="host">The host.</param>
+        /// <param name="port">The port.</param>
+        public void OverrideApiUrl(string host, int port)
+        {
+            ApiHost = host;
+            ApiPort = port;
+        }
+
+        /// <summary>
+        /// Overrides the report URL. (Can be used for testing purposes)
+        /// </summary>
+        /// <param name="host">The host.</param>
+        /// <param name="port">The port.</param>
+        public void OverrideReportUrl(string host, int port)
+        {
+            ReportHost = host;
+            ReportPort = port;
+        }
+
         #endregion
 
         #region Protected methods
 
+        /// <summary>
+        /// Creates the query push message status request.
+        /// </summary>
+        /// <param name="messageIdCollection">The message identifier collection.</param>
+        /// <returns>RestRequest</returns>
         protected RestRequest CreateQueryPushMessageStatusRequest(List<string> messageIdCollection)
         {
             var restRequest = new RestRequest("received", Method.GET);
@@ -312,12 +317,17 @@ namespace JPush
             return restRequest;
         }
 
+        /// <summary>
+        /// Creates the push message request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>RestRequest</returns>
         protected RestRequest CreatePushMessageRequest(PushMessageRequest request)
         {
             var restRequest = new RestRequest("push", Method.POST);
-            foreach (var x in CreatePostDictionary(request))
+            foreach (var kvp in CreatePostDictionary(request))
             {
-                restRequest.AddParameter(x.Key, x.Value);
+                restRequest.AddParameter(kvp.Key, kvp.Value);
             }
 
             return restRequest;
@@ -334,6 +344,11 @@ namespace JPush
             return client;
         }
 
+        /// <summary>
+        /// Maps a IRestResponse[JPushResponse] to PushResponse
+        /// </summary>
+        /// <param name="source">The IRestResponse[JPushResponse].</param>
+        /// <returns>PushResponse</returns>
         protected PushResponse Map(IRestResponse<JPushResponse> source)
         {
             if (source == null || source.Data == null)
@@ -359,6 +374,11 @@ namespace JPush
             return result;
         }
 
+        /// <summary>
+        /// Maps IRestResponse[List[JPushMessageStatusResponse]] to List[PushMessageStatus].
+        /// </summary>
+        /// <param name="source">The IRestResponse[List[JPushMessageStatusResponse]].</param>
+        /// <returns>List[PushMessageStatus]</returns>
         protected List<PushMessageStatus> Map(IRestResponse<List<JPushMessageStatusResponse>> source)
         {
             if (source == null || source.Data == null)
@@ -376,6 +396,11 @@ namespace JPush
                 .ToList();
         }
 
+        /// <summary>
+        /// Maps a PushMessageRequest to a JPushMessageRequest.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
         protected JPushMessageRequest Map(PushMessageRequest request)
         {
             var sendIdentity = GenerateSendIdentity();
