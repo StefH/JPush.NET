@@ -8,8 +8,8 @@
     <ProjectGuid>{E7B4FE58-692D-44E3-AE7E-8964E3A5347E}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>JPushTestServer</RootNamespace>
-    <AssemblyName>JPushTestServer</AssemblyName>
+    <RootNamespace>JPush.TestServer</RootNamespace>
+    <AssemblyName>JPush.TestServer</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -58,6 +58,7 @@
       <Link>Models\JPushResponse.cs</Link>
     </Compile>
     <Compile Include="JPushServices.cs" />
+    <Compile Include="JPushTestServer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />

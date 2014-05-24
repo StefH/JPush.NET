@@ -1,23 +1,41 @@
 ﻿using System;
-using System.ServiceModel;
-using System.ServiceModel.Web;
+using System.Collections.Specialized;
+using JPush.JPushModels;
 
-namespace JPushTestServer
+namespace JPush.TestServer
 {
     class Program
     {
         static void Main(string[] args)
         {
-            var services = new JPushServices();
-            var binding = new WebHttpBinding();
+            var testServer = new JPushTestServer("http://localhost:10000")
+            {
+                PushMessageReceived = PushMessageReceived,
+                QueryPushMessageStatusReceived = QueryPushMessageStatusReceived
+            };
 
-            var serviceHost = new WebServiceHost(services, new Uri("http://localhost:10000/v2/"));
-            serviceHost.AddServiceEndpoint(typeof(JPushServices), binding, "");
-            serviceHost.Open();
+            testServer.Start();
 
             Console.WriteLine("Press any key to exit.");
             Console.ReadKey();
-            serviceHost.Close();
+
+            testServer.Stop();
+        }
+
+        private static void PushMessageReceived(NameValueCollection queryValues, JPushMessageRequest request)
+        {
+            Console.WriteLine("POST /push");
+
+            foreach (string key in queryValues)
+            {
+                Console.WriteLine("[{0}]={1}", key, queryValues[key]);
+            }
+        }
+
+        private static void QueryPushMessageStatusReceived(string messageIds)
+        {
+            Console.WriteLine("GET /received");
+            Console.WriteLine("[msg_ids]={0}", messageIds);
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace JPushTestServer.Extensions
+namespace JPush.TestServer.Extensions
 {
 	public static class TypeExtensions
 	{

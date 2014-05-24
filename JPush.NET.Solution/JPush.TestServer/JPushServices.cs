@@ -10,23 +10,29 @@ using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 using System.Web;
 using JPush.JPushModels;
-using JPushTestServer.Extensions;
+using JPush.TestServer.Extensions;
 
-namespace JPushTestServer
+namespace JPush.TestServer
 {
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, ConcurrencyMode = ConcurrencyMode.Single, IncludeExceptionDetailInFaults = true)]
     [AspNetCompatibilityRequirements(RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed)]
     [ServiceContract(Name = "JPushServices")]
     public class JPushServices
     {
+        public PushMessageReceivedDelegate PushMessageReceived { private get; set; }
+        public QueryPushMessageStatusReceivedDelegate QueryPushMessageStatusReceived { private get; set; }
+
+
         // GET /v2/received
         // msg_ids=1,2,3
         [OperationContract]
         [WebGet(UriTemplate = "received?msg_ids={messageIds}", BodyStyle = WebMessageBodyStyle.Bare, ResponseFormat = WebMessageFormat.Json)]
         public IEnumerable<JPushMessageStatusResponse> QueryPushMessageStatus(string messageIds)
         {
-            Console.WriteLine("GET /received");
-            Console.WriteLine("[msg_ids]={0}", messageIds);
+            if (QueryPushMessageStatusReceived != null)
+            {
+                QueryPushMessageStatusReceived(messageIds);
+            }
 
             return messageIds.Split(',').Select(messageId =>
                 new JPushMessageStatusResponse
@@ -52,16 +58,15 @@ namespace JPushTestServer
         [WebInvoke(Method = "POST", UriTemplate = "push", BodyStyle = WebMessageBodyStyle.Bare, ResponseFormat = WebMessageFormat.Json)]
         public JPushResponse PushMessage(Stream stream)
         {
-            Console.WriteLine("POST /push");
             var data = new StreamReader(stream).ReadToEnd();
 
             var queryValues = HttpUtility.ParseQueryString(data);
-            foreach (string key in queryValues)
-            {
-                Console.WriteLine("[{0}]={1}", key, queryValues[key]);
-            }
-
             var request = ParseJPushMessageRequest(queryValues);
+
+            if (PushMessageReceived != null)
+            {
+                PushMessageReceived(queryValues, request);
+            }
 
             return new JPushResponse
             {
