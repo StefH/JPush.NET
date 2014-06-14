@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Specialized;
-using JPush.JPushModels;
+using JPush.V2.InternalModels;
+using JPush.V3.ExternalModels;
 
 namespace JPush.TestServer
 {
@@ -10,21 +11,23 @@ namespace JPush.TestServer
         {
             var testServer = new JPushTestServer("http://localhost:10000")
             {
-                PushMessageReceived = PushMessageReceived,
+                PushMessageReceivedV2 = PushMessageReceivedV2,
+                PushMessageReceivedV3 = PushMessageReceivedV3,
                 QueryPushMessageStatusReceived = QueryPushMessageStatusReceived
             };
 
             testServer.Start();
 
-            Console.WriteLine("Press any key to exit.");
+            Console.WriteLine("JPushTestServer running. Press any key to stop.");
             Console.ReadKey();
 
             testServer.Stop();
+            Console.WriteLine("JPushTestServer stopped.");
         }
 
-        private static void PushMessageReceived(NameValueCollection queryValues, JPushMessageRequest request)
+        private static void PushMessageReceivedV2(NameValueCollection queryValues, JPushMessageRequest request)
         {
-            Console.WriteLine("POST /push");
+            Console.WriteLine("POST /v2/push");
 
             foreach (string key in queryValues)
             {
@@ -32,9 +35,16 @@ namespace JPush.TestServer
             }
         }
 
+        private static void PushMessageReceivedV3(JPushMessage message)
+        {
+            Console.WriteLine("POST /v3/push");
+
+            Console.WriteLine(message);
+        }
+
         private static void QueryPushMessageStatusReceived(string messageIds)
         {
-            Console.WriteLine("GET /received");
+            Console.WriteLine("GET /v2/received");
             Console.WriteLine("[msg_ids]={0}", messageIds);
         }
     }

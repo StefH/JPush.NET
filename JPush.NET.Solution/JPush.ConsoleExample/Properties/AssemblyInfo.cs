@@ -4,11 +4,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("JPushConsoleExample")]
+[assembly: AssemblyTitle("JPushConsoleExample V2")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("JPushConsoleExample")]
+[assembly: AssemblyProduct("JPushConsoleExampleV2")]
 [assembly: AssemblyCopyright("Copyright © Stef Heyenrath 2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

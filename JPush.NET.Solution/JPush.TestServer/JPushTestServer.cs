@@ -2,27 +2,42 @@
 using System.Collections.Specialized;
 using System.ServiceModel;
 using System.ServiceModel.Web;
-using JPush.JPushModels;
+using JPush.V2.InternalModels;
+using JPush.V3.ExternalModels;
 
 namespace JPush.TestServer
 {
-    public delegate void PushMessageReceivedDelegate(NameValueCollection queryValues, JPushMessageRequest request);
+    public delegate void PushMessageReceivedV2Delegate(NameValueCollection queryValues, JPushMessageRequest request);
+    public delegate void PushMessageReceivedV3Delegate(JPushMessage message);
     public delegate void QueryPushMessageStatusReceivedDelegate(string messageIds);
 
     public class JPushTestServer
     {
-        private readonly WebServiceHost _serviceHost;
-        private readonly JPushServices _services;
+        private readonly WebServiceHost _serviceHostV2;
+        private readonly WebServiceHost _serviceHostV3;
 
-        private PushMessageReceivedDelegate _pushMessageReceived;
+        private readonly JPushServiceV2 _serviceV2 = new JPushServiceV2();
+        private readonly JPushServiceV3 _serviceV3 = new JPushServiceV3();
+
+        private PushMessageReceivedV2Delegate _pushMessageReceivedV2;
+        private PushMessageReceivedV3Delegate _pushMessageReceivedV3;
         private QueryPushMessageStatusReceivedDelegate _queryPushMessageStatusReceived;
 
-        public PushMessageReceivedDelegate PushMessageReceived
+        public PushMessageReceivedV2Delegate PushMessageReceivedV2
         {
             set
             {
-                _pushMessageReceived = value;
-                _services.PushMessageReceived = _pushMessageReceived;
+                _pushMessageReceivedV2 = value;
+                _serviceV2.PushMessageReceived = _pushMessageReceivedV2;
+            }
+        }
+
+        public PushMessageReceivedV3Delegate PushMessageReceivedV3
+        {
+            set
+            {
+                _pushMessageReceivedV3 = value;
+                _serviceV3.PushMessageReceived = _pushMessageReceivedV3;
             }
         }
 
@@ -31,27 +46,32 @@ namespace JPush.TestServer
             set
             {
                 _queryPushMessageStatusReceived = value;
-                _services.QueryPushMessageStatusReceived = _queryPushMessageStatusReceived;
+                _serviceV2.QueryPushMessageStatusReceived = _queryPushMessageStatusReceived;
             }
         }
 
         public JPushTestServer(string baseAddress)
         {
-            _services = new JPushServices();
-            _serviceHost = new WebServiceHost(_services, new Uri(string.Format("{0}/v2/", baseAddress)));
+            _serviceHostV2 = new WebServiceHost(_serviceV2, new Uri(string.Format("{0}/v2/", baseAddress)));
+            _serviceHostV3 = new WebServiceHost(_serviceV3, new Uri(string.Format("{0}/v3/", baseAddress)));
 
-            var binding = new WebHttpBinding();
-            _serviceHost.AddServiceEndpoint(typeof(JPushServices), binding, "");
+            var bindingV2 = new WebHttpBinding();
+            _serviceHostV2.AddServiceEndpoint(typeof(JPushServiceV2), bindingV2, "");
+
+            var bindingV3 = new WebHttpBinding();
+            _serviceHostV3.AddServiceEndpoint(typeof(JPushServiceV3), bindingV3, "");
         }
 
         public void Start()
         {
-            _serviceHost.Open();
+            _serviceHostV2.Open();
+            _serviceHostV3.Open();
         }
 
         public void Stop()
         {
-            _serviceHost.Close();
+            _serviceHostV2.Close();
+            _serviceHostV3.Close();
         }
     }
 }

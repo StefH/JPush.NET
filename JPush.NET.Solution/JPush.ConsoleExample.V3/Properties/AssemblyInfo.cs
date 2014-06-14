@@ -4,12 +4,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("JPush.V2")]
-[assembly: AssemblyDescription("Library to send messages to JPush V2")]
+[assembly: AssemblyTitle("JPushConsoleExample V3")]
+[assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("JPush.V2")]
-[assembly: AssemblyCopyright("Copyright © rynnwang and Stef Heyenrath 2014")]
+[assembly: AssemblyProduct("JPushConsoleExampleV3")]
+[assembly: AssemblyCopyright("Copyright © Stef Heyenrath 2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -19,7 +19,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("89c136ca-37d0-4b32-9620-4cec61466bfd")]
+[assembly: Guid("b2e08257-1dd0-4f4f-bbd4-4771651aacfa")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -31,5 +31,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("2.0.0.0")]
-[assembly: AssemblyFileVersion("2.0.0.0")]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]

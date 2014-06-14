@@ -4,10 +4,10 @@ using System.IO;
 using System.Linq;
 using JPush.Core;
 using JPush.Core.ExternalModels;
-using JPush.V2;
-using JPush.V2.ExternalModels;
+using JPush.V3;
+using JPush.V3.ExternalModels;
 
-namespace JPushConsoleExampleV2
+namespace JPushConsoleExampleV3
 {
     class Program
     {
@@ -46,31 +46,42 @@ namespace JPushConsoleExampleV2
         {
             var proxy = !string.IsNullOrEmpty(_proxyUrl) ? new JPushProxySettings(true, _proxyUrl, "", "", "") : null;
 
-            var client = new JPushClientV2(_appKey, _masterSecret, false, proxy);
+            var client = new JPushClientV3(_appKey, _masterSecret, proxy);
             if (useLocalhost)
             {
-                Console.WriteLine("Call http://localhost:10000/v2");
+                Console.WriteLine("Call http://localhost:10000/v3");
                 client.OverrideApiUrl("http://localhost", 10000);
                 client.OverrideReportUrl("http://localhost", 10000);
             }
 
-            var request = new PushMessageRequest
+            var message = new JPushMessage
             {
-                MessageType = MessageType.Notification,
-                Platform = PushPlatform.Android,
-                Description = "DotNET",
-                PushType = PushType.ByRegistrationId,
-                ReceiverValue = "0606a164ac1",
-                IsTestEnvironment = true,
-                Message = new PushMessage
+                Options = new Options
                 {
-                    Content = "JPush ByRegistrationId message @ " + DateTime.Now.ToLongTimeString(),
-                    PushTitle = "<推送服务>",
-                    Sound = "YourSound"
+                    ApnsProduction = false,
+                    SendNo = client.GenerateSendIdentity()
+                },
+                Audience = new Audience
+                {
+                    RegistrationId = new List<string> { "0606a164ac1" }
+                },
+                Platform = new List<string> { "android" },
+                Notification = new Notification
+                {
+                    Android = new Android
+                    {
+                        Title = "Android Title",
+                        Alert = "Android Alert (to RegistrationId)",
+                    }
+                },
+                Message = new Message
+                {
+                    Title = "Message Title",
+                    Content = "JPush V3 ByRegistrationId message @ " + DateTime.Now.ToLongTimeString()
                 }
             };
 
-            var response = client.SendPushMessage(request);
+            var response = client.SendPushMessage(message);
 
             if (response.ResponseCode == PushResponseCode.Succeed)
             {
@@ -96,30 +107,39 @@ namespace JPushConsoleExampleV2
 
         private static void SendBroadcastMessage()
         {
-            var client = new JPushClientV2(_appKey, _masterSecret);
+            var client = new JPushClientV3(_appKey, _masterSecret);
 
             var customizedValues = new Dictionary<string, string>();
             customizedValues.Add("CK1", "CV1");
             customizedValues.Add("CK2", "CV2");
 
-            var request = new PushMessageRequest
+            var message = new JPushMessage
             {
-                MessageType = MessageType.Notification,
-                Platform = PushPlatform.Android,
-                Description = "DotNET",
-                PushType = PushType.Broadcast,
-                IsTestEnvironment = true,
-                Message = new PushMessage
+                Options = new Options
                 {
-                    Content = "JPush message @ " + DateTime.Now.ToLongTimeString(),
-                    PushTitle = "<推送服务>",
-                    Sound = "YourSound",
-                    CustomizedValue = customizedValues
+                    ApnsProduction = false,
+                    SendNo = client.GenerateSendIdentity()
+                },
+                Audience = "all",
+                Platform = new List<string> { "android" },
+                Notification = new Notification
+                {
+                    Android = new Android
+                    {
+                        Title = "Android Title",
+                        Alert = "Android Alert (broadcast)",
+                        Extras = customizedValues
+                    },
+                },
+                Message = new Message
+                {
+                    Title = "Message Title",
+                    Content = "JPush V3 ByRegistrationId message @ " + DateTime.Now.ToLongTimeString()
                 }
             };
 
             var idToCheck = new List<string>();
-            var response = client.SendPushMessage(request);
+            var response = client.SendPushMessage(message);
 
             Console.WriteLine("SendPushMessage : " + response.ResponseCode + ":" + response.ResponseMessage);
             Console.WriteLine("Push sent : " + response.MessageId);
@@ -127,8 +147,8 @@ namespace JPushConsoleExampleV2
             if (response.ResponseCode == PushResponseCode.Succeed)
             {
 
-                request.Message.PushTitle += "ASYNC";
-                var sendTask = client.SendPushMessageAsync(request);
+                message.Notification.Android.Alert += "ASYNC";
+                var sendTask = client.SendPushMessageAsync(message);
                 sendTask.ContinueWith(task =>
                 {
                     if (task.IsFaulted)

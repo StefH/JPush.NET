@@ -34,6 +34,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>jpush.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -48,16 +51,68 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\JPush\JPushModels\JPushMessageRequest.cs">
-      <Link>Models\JPushMessageRequest.cs</Link>
+    <Compile Include="..\JPush.Core\ExternalModels\PushMessageStatus.cs">
+      <Link>ExternalModels.Core\PushMessageStatus.cs</Link>
     </Compile>
-    <Compile Include="..\JPush\JPushModels\JPushMessageStatusResponse.cs">
-      <Link>Models\JPushMessageStatusResponse.cs</Link>
+    <Compile Include="..\JPush.Core\ExternalModels\PushResponse.cs">
+      <Link>ExternalModels.Core\PushResponse.cs</Link>
     </Compile>
-    <Compile Include="..\JPush\JPushModels\JPushResponse.cs">
-      <Link>Models\JPushResponse.cs</Link>
+    <Compile Include="..\JPush.Core\ExternalModels\PushResponseCode.cs">
+      <Link>ExternalModels.Core\PushResponseCode.cs</Link>
     </Compile>
-    <Compile Include="JPushServices.cs" />
+    <Compile Include="..\JPush.Core\InternalModels\JPushMessageStatusResponse.cs">
+      <Link>InternalModels.Core\JPushMessageStatusResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\JPush.Core\InternalModels\JPushResponse.cs">
+      <Link>InternalModels.Core\JPushResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\JPush.V3\ExternalModels\Android.cs">
+      <Link>ExternalModels.V3\Android.cs</Link>
+    </Compile>
+    <Compile Include="..\JPush.V3\ExternalModels\Apple.cs">
+      <Link>ExternalModels.V3\Apple.cs</Link>
+    </Compile>
+    <Compile Include="..\JPush.V3\ExternalModels\Audience.cs">
+      <Link>ExternalModels.V3\Audience.cs</Link>
+    </Compile>
+    <Compile Include="..\JPush.V3\ExternalModels\JPushMessage.cs">
+      <Link>ExternalModels.V3\JPushMessage.cs</Link>
+    </Compile>
+    <Compile Include="..\JPush.V3\ExternalModels\Message.cs">
+      <Link>ExternalModels.V3\Message.cs</Link>
+    </Compile>
+    <Compile Include="..\JPush.V3\ExternalModels\Notification.cs">
+      <Link>ExternalModels.V3\Notification.cs</Link>
+    </Compile>
+    <Compile Include="..\JPush.V3\ExternalModels\Options.cs">
+      <Link>ExternalModels.V3\Options.cs</Link>
+    </Compile>
+    <Compile Include="..\JPush.V3\ExternalModels\WindowsPhone.cs">
+      <Link>ExternalModels.V3\WindowsPhone.cs</Link>
+    </Compile>
+    <Compile Include="..\JPush\ExternalModels\MessageType.cs">
+      <Link>ExternalModels.V2\MessageType.cs</Link>
+    </Compile>
+    <Compile Include="..\JPush\ExternalModels\PushMessage.cs">
+      <Link>ExternalModels.V2\PushMessage.cs</Link>
+    </Compile>
+    <Compile Include="..\JPush\ExternalModels\PushMessageRequest.cs">
+      <Link>ExternalModels.V2\PushMessageRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\JPush\ExternalModels\PushMessageStatus.cs">
+      <Link>ExternalModels.V2\PushMessageStatus.cs</Link>
+    </Compile>
+    <Compile Include="..\JPush\ExternalModels\PushPlatform.cs">
+      <Link>ExternalModels.V2\PushPlatform.cs</Link>
+    </Compile>
+    <Compile Include="..\JPush\ExternalModels\PushType.cs">
+      <Link>ExternalModels.V2\PushType.cs</Link>
+    </Compile>
+    <Compile Include="..\JPush\InternalModels\JPushMessageRequest.cs">
+      <Link>InternalModels.V2\JPushMessageRequest.cs</Link>
+    </Compile>
+    <Compile Include="JPushServiceV3.cs" />
+    <Compile Include="JPushServiceV2.cs" />
     <Compile Include="JPushTestServer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -66,7 +121,9 @@
   <ItemGroup>
     <None Include="app.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="jpush.ico" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
