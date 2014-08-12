@@ -17,6 +17,30 @@ namespace JPush.V3
     /// </summary>
     public class JPushClientV3 : JPushClientBase
     {
+        #region Delegate Definitions
+        /// <summary>
+        /// Delegate for PushMessageSent
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="notification">The notification.</param>
+        /// <param name="response">The response.</param>
+        public delegate void PushMessageSentDelegate(object sender, JPushMessage notification, PushResponse response);
+
+        /// <summary>
+        /// Delegate for PushMessageFailed (Exception or Timeout)
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="notification">The notification.</param>
+        /// <param name="exception">The exception.</param>
+        public delegate void PushMessageFailedDelegate(object sender, JPushMessage notification, Exception exception);
+        #endregion
+
+        #region Delegates
+        public event PushMessageSentDelegate OnPushMessageSent;
+
+        public event PushMessageFailedDelegate OnPushMessageFailed;
+        #endregion
+
         /// <summary>
         /// Gets the API base URL.
         /// </summary>
@@ -56,13 +80,14 @@ namespace JPush.V3
         /// Sends the push message.
         /// </summary>
         /// <param name="message">The PushMessageRequest.</param>
-        /// <returns>PushResponse.</returns>
-        public PushResponse SendPushMessage(JPushMessage message)
+        /// <param name="timeout">The timeout in milliseconds.</param>
+        /// <returns>PushResponse </returns>
+        public PushResponse SendPushMessage(JPushMessage message, int? timeout = 30 * 1000)
         {
             ValidateSendPushMessage(message);
 
             var client = CreateJPushRestClient(ApiBaseUrl, new RestSharpJsonNetDeserializer());
-            var restRequest = CreatePushMessageRequest(message);
+            var restRequest = CreatePushMessageRequest(message, timeout);
 
             var restResponse = client.Execute<JPushResponse>(restRequest);
             return Map(restResponse);
@@ -72,17 +97,53 @@ namespace JPush.V3
         /// Sends the push message async.
         /// </summary>
         /// <param name="message">The message.</param>
-        /// <returns></returns>
+        /// <param name="timeout">The timeout in milliseconds.</param>
+        /// <returns>Task PushResponse</returns>
         /// <exception cref="System.ArgumentNullException">request</exception>
-        public Task<PushResponse> SendPushMessageAsync(JPushMessage message)
+        public Task<PushResponse> SendPushMessageAsync(JPushMessage message, int? timeout = 30 * 1000)
         {
             ValidateSendPushMessage(message);
 
             var client = CreateJPushRestClient(ApiBaseUrl, new RestSharpJsonNetDeserializer());
-            var restRequest = CreatePushMessageRequest(message);
+            var restRequest = CreatePushMessageRequest(message, timeout);
 
             var resttask = client.ExecuteTaskAsync<JPushResponse>(restRequest);
             return resttask.MapTask(Map);
+        }
+
+        /// <summary>
+        /// Queues the push message async.
+        /// TODO : implement real queue
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="timeout">The timeout in milliseconds..</param>
+        public void QueuePushMessageAsync(JPushMessage message, int? timeout = 30 * 1000)
+        {
+            SendPushMessageAsync(message, timeout)
+                .ContinueWith(task =>
+                {
+                    if (task.IsFaulted)
+                    {
+                        if (OnPushMessageFailed != null)
+                        {
+                            OnPushMessageFailed(this, message, task.Exception);
+                        }
+                    }
+                    else if (task.IsCanceled)
+                    {
+                        if (OnPushMessageFailed != null)
+                        {
+                            OnPushMessageFailed(this, message, new TaskCanceledException());
+                        }
+                    }
+                    else
+                    {
+                        if (OnPushMessageSent != null)
+                        {
+                            OnPushMessageSent(this, message, task.Result);
+                        }
+                    }
+                });
         }
 
         #endregion
@@ -144,16 +205,20 @@ namespace JPush.V3
         /// Creates the push message request.
         /// </summary>
         /// <param name="message">The message.</param>
-        /// <param name="timeout">The timeout.</param>
+        /// <param name="timeout">The timeout in milliseconds to be used for the request.</param>
         /// <returns>RestRequest</returns>
-        private RestRequest CreatePushMessageRequest(JPushMessage message, int? timeout = 30 * 1000)
+        private RestRequest CreatePushMessageRequest(JPushMessage message, int? timeout)
         {
             var restRequest = new RestRequest("push", Method.POST)
             {
-                Timeout = timeout ?? 0,
                 RequestFormat = DataFormat.Json,
                 JsonSerializer = new RestSharpJsonNetSerializer()
             };
+
+            if (timeout.HasValue)
+            {
+                restRequest.Timeout = timeout.Value;
+            }
 
             restRequest.AddBody(message);
 

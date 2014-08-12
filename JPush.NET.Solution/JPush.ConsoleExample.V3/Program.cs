@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using JPush.Core;
 using JPush.Core.ExternalModels;
 using JPush.V3;
@@ -103,6 +104,22 @@ namespace JPushConsoleExampleV3
             {
                 Console.WriteLine("There was an error [{0}, {1}] when sending a PushMessage", response.ResponseCode, response.ResponseMessage);
             }
+
+            client.OnPushMessageSent += OnPushMessageSent;
+            client.OnPushMessageFailed += OnPushMessageFailed;
+
+            // Start a new Task and QueueAsync
+            Task.Factory.StartNew(() => client.QueuePushMessageAsync(message)).Wait(TimeSpan.FromSeconds(10));
+        }
+
+        static void OnPushMessageFailed(object sender, JPushMessage notification, Exception exception)
+        {
+            Console.WriteLine("OnPushMessageFailedDelegate : " + exception);
+        }
+
+        static void OnPushMessageSent(object sender, JPushMessage notification, PushResponse response)
+        {
+            Console.WriteLine("OnPushMessageSentDelegate : " + response.ResponseCode + ":" + response.ResponseMessage + ", MessageId=" + response.MessageId);
         }
 
         private static void SendBroadcastMessage()
@@ -146,7 +163,6 @@ namespace JPushConsoleExampleV3
 
             if (response.ResponseCode == PushResponseCode.Succeed)
             {
-
                 message.Notification.Android.Alert += "ASYNC";
                 var sendTask = client.SendPushMessageAsync(message);
                 sendTask.ContinueWith(task =>
@@ -168,8 +184,8 @@ namespace JPushConsoleExampleV3
                         idToCheck.Add(task.Result.MessageId);
                     }
                 })
-                    .Wait(TimeSpan.FromSeconds(10))
-                    ;
+                .Wait(TimeSpan.FromSeconds(10))
+                ;
 
                 idToCheck.Add(response.MessageId);
 
