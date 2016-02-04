@@ -1,4 +1,5 @@
 ﻿using RestSharp;
+using RestSharp.Authenticators;
 using RestSharp.Deserializers;
 
 namespace JPush.Core.JPushRest

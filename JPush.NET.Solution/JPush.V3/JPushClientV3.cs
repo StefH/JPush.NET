@@ -168,9 +168,9 @@ namespace JPush.V3
                 throw new ArgumentException("message.Audience");
             }
 
-            if (message.Audience is Audience)
+            var audience = message.Audience as Audience;
+            if (audience != null)
             {
-                var audience = message.Audience as Audience;
                 if (audience.Tag != null && audience.Tag.Count > Audience.MaxTag)
                 {
                     throw new ArgumentException(string.Format("message.Audience.Tag Count > {0}", Audience.MaxTag));
